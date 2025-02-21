@@ -28,8 +28,10 @@ pub fn open_file(editor: &mut Editor) {
             }
         },
         Err(_) => {
-            editor.filename = String::from("Untitled.txt");
-            editor.notification = String::from("Open a file");
+            editor.filename = String::from("error");
+            editor.notification = String::from("Failed to open file!");
+            editor.lines = Vec::new();
+            editor.lines.push(String::from("Failed to open file!"));
         }
     }
 
