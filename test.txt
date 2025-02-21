@@ -1,0 +1,7 @@
+This is a test file.
+This is line 2.
+this is line 3 i wrote.
+
+isn't this so awesome???
+
+i wonder if i can write my own files in this lol
