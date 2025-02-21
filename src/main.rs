@@ -10,17 +10,15 @@ use ratatui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     style::{Color, Style},
-    text::{Span, Text, Line},
+    text::{Text, Line},
     widgets::{Block, Borders, Paragraph},
     Terminal,
 };
 use std::{
-    char, env, io::{self, stdout, Read}
+    env, io::{self, stdout}
 };
 
-use files::{
-    open::open_file,
-};
+use files::open::open_file;
 
 use editor::{
     editor::Editor,
@@ -67,7 +65,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
             // outer layout to add the header and the editor
             let outer_layout = Layout::default()
                 .direction(Direction::Vertical)  // Vertical split
-                .constraints([Constraint::Length(3), Constraint::Min(0)]) 
+                .constraints([Constraint::Length(3), Constraint::Min(20)]) 
                 .split(size);
 
 
@@ -152,7 +150,13 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
             }
             match (code, modifiers) {
                 (_, KeyModifiers::CONTROL) | (_, KeyModifiers::META) => {
+                    if modifiers.contains(KeyModifiers::SHIFT) {
+                        //handle_ctrl_shift(editor, code, modifiers);
+                    }
                     handle_ctrl(editor, code, modifiers);
+                }
+                (KeyCode::Tab, _) => {
+                    editor.insert('\t');
                 }
                 (KeyCode::Backspace, _) => {
                     editor.backspace();

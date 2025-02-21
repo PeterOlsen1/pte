@@ -1,5 +1,5 @@
 // handle ctrl + moves in this file
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{KeyCode, KeyModifiers};
 use super::{
     editor::Editor,
     commands::Command
@@ -9,7 +9,7 @@ use crate::files::save::save_file;
 /**
  * Handle any CTRL + key events
  * 
- * @param text: &mut String - Mutable reference to the current text in the editor
+ * @param editor: &mut Editor - Mutable reference to the current editor
  * @param code: KeyCode - The key code of the key event
  * @param modifier: KeyModifiers - The modifier of the key event (should be CTRL, maybe more?)
  * We should probably pass in current state of the editor too, if we want to move the cursor
@@ -35,12 +35,12 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
         KeyCode::Char('g') => {
             editor.notif_text = String::from("Goto line: ");
             editor.command_mode = true;
-            editor.command = Command::GOTO_LINE;
+            editor.command = Command::GotoLine;
         }
         KeyCode::Char('j') => { // for some reason, CTRL + Enter maps to CTRL + j?
             editor.notif_text = String::from("Move cursor with WASD");
             editor.command_mode = true;
-            editor.command = Command::MOVE_CURSOR;
+            editor.command = Command::MoveCursor;
         }
         KeyCode::Char('l') => {
             editor.notif_text = String::from("Select line");
@@ -52,16 +52,10 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
             editor.notif_text = String::from("Find occurence");
         }
         KeyCode::Right => {
-            for cursor in &mut editor.cursors {
-                while (cursor.col as usize) < editor.lines[cursor.line as usize].len() {
-                    cursor.col += 1;
-                }
-            }
+            editor.right_word();
         }
         KeyCode::Left => {
-            while (editor.cursor.1 as usize) > 0 {
-                editor.cursor.1 -= 1;
-            }
+            editor.left_word();
         }
         _ => {
             editor.notif_text = String::from("Invalid command");
@@ -69,20 +63,59 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
     }
 }
 
+/**
+ * Handle any CTRL + SHIFT + key events
+ * 
+ * @param editor: &mut Editor - Mutable reference to the current editor
+ * @param code: KeyCode - The key code of the key event
+ * @param modifier: KeyModifiers - The modifier of the key event (should be CTRL, maybe more?)
+ */
+pub fn handle_ctrl_shift(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -> () {
+    match code {
+        KeyCode::Right => {
+            //
+        }
+        KeyCode::Left => {
+
+        }
+        KeyCode::Up => {
+
+        }
+        KeyCode::Down => {
+
+        }
+        _ => {}
+    }
+}
+
 pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -> () {
-    if editor.command == Command::MOVE_CURSOR {
+    if editor.command == Command::MoveCursor {
         match code {
-            KeyCode::Char('w') => {
+            KeyCode::Char('w') | KeyCode::Char('i') | KeyCode::Up => {
                 editor.up();
             }
-            KeyCode::Char('s') => {
+            KeyCode::Char('s') | KeyCode::Char('k') | KeyCode::Down => {
                 editor.down();
             }
-            KeyCode::Char('a') => {
-                editor.left();
+            KeyCode::Char('a') | KeyCode::Char('j') | KeyCode::Left => {
+                if modifier == KeyModifiers::CONTROL {
+                    editor.left_word();
+                }
+                else {
+                    editor.left();
+                }
             }
-            KeyCode::Char('d') => {
-                editor.right();
+            KeyCode::Char('d') | KeyCode::Char('l') | KeyCode::Right => {
+                if modifier == KeyModifiers::CONTROL {
+                    editor.right_word();
+                } 
+                else {
+                    editor.right();
+                }
+            }
+            KeyCode::Enter | KeyCode::Esc => {
+                editor.command_mode = false;
+                editor.notif_text = String::from("Editor mode");
             }
             _ => {}
         }
@@ -103,7 +136,7 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
         }
         KeyCode::Enter => {
             match editor.command {
-                Command::GOTO_LINE => {
+                Command::GotoLine => {
                     editor.command_mode = false;
                     
                     // only keep one cursor
@@ -135,9 +168,6 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                         } 
                         editor.cursors[0].col = col;
                     }
-                }
-                Command::MOVE_CURSOR => {
-                    editor.command_mode = false;
                 }
                 _ => {}
             }

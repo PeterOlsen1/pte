@@ -6,7 +6,6 @@ use super::{
 pub struct Editor {
     pub text: String,
     pub lines: Vec<String>,
-    pub cursor: (u16, u16),
     pub cursors: Vec<Cursor>,
     pub filename: String,
     pub notif_text: String,
@@ -19,10 +18,9 @@ impl Editor {
         let mut temp = Self {
             text: String::new(),
             lines: Vec::new(),
-            cursor: (0, 0),
             cursors: Vec::new(),
             filename: String::new(),
-            notif_text: String::new(),
+            notif_text: String::from("Editor mode"),
             command_mode: false,
             command: Command::new(),
         };
@@ -57,10 +55,10 @@ impl Editor {
             } 
             else if line > 0 {
                 let prev_len = self.lines[cursor.line as usize - 1].len();
-                let line = self.lines[cursor.line as usize - 1].clone();
+                let line = self.lines[cursor.line as usize].clone();
     
-             self.lines[cursor.line as usize - 1].push_str(&line);
-             self.lines.remove(cursor.line as usize);
+                self.lines[cursor.line as usize - 1].push_str(&line);
+                self.lines.remove(cursor.line as usize);
                 cursor.line -= 1;
                 cursor.col = prev_len as u16;
             }
@@ -98,6 +96,22 @@ impl Editor {
             else {
                 cursor.line += 1;
                 cursor.col = 0;
+            }
+        }
+    }
+
+    pub fn right_word(&mut self) {
+        for cursor in &mut self.cursors {
+            while (cursor.col as usize) < self.lines[cursor.line as usize].len() {
+                cursor.col += 1;
+            }
+        }
+    }
+
+    pub fn left_word(&mut self) {
+        for cursor in &mut self.cursors {
+            while (cursor.col as usize) > 0 {
+                cursor.col -= 1;
             }
         }
     }
