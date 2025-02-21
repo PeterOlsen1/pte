@@ -1,4 +1,3 @@
-mod input;
 mod files;
 mod editor;
 
@@ -16,14 +15,19 @@ use ratatui::{
     Terminal,
 };
 use std::{
-    io::{self, stdout, Read},
-    env,
+    char, env, io::{self, stdout, Read}
 };
-use input::ctrl;
+
 use files::{
     open::open_file,
 };
-use crate::editor::editor::Editor;
+
+use editor::{
+    editor::Editor,
+    input::{
+        handle_ctrl, handle_command
+    },
+};
 
 fn main() -> io::Result<()> {
     // Set up terminal
@@ -82,7 +86,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                 .style(Style::default().fg(Color::Cyan))
                 .alignment(ratatui::layout::Alignment::Center);
 
-            let title_right_as_text = Text::from(editor.notification.clone());
+            let title_right_as_text = Text::from(editor.notif_text.clone());
             let header_right = Paragraph::new(title_right_as_text)
                 .block(header_block.clone())
                 .alignment(ratatui::layout::Alignment::Center);
@@ -92,19 +96,26 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
             frame.render_widget(header_right, header_layout[1]);
 
 
-            // editor block
-            let editor_block = Block::default()
-                .borders(Borders::ALL);
+            let editor_layout = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Length(6), Constraint::Min(0)])
+                .split(outer_layout[1]);
 
-            // Add cursor to the editor text
+            // add cursor to editor text
             let mut lines_with_cursor = Vec::new();
+            let mut line_numbers = Vec::new();
             let lines = &editor.lines;
             
-            // Ensure cursor position is valid within the text
-            let row = editor.cursor.0 as usize;
-            let col = editor.cursor.1 as usize;
+            // get cursor position
+            let cursor_line = editor.cursors[0].line as usize;
+            let col = editor.cursors[0].col as usize;
             for (index, line) in lines.iter().enumerate() {
-                if index == row {
+                line_numbers.push(Line::styled(
+                    format!("{:4}  ", index + 1),
+                    Style::default().fg(Color::Cyan),
+                ));
+
+                if index == cursor_line {
                     // Insert cursor symbol (`^`) at the correct column
                     let mut line_with_cursor = line.to_string();
                     if col < line_with_cursor.len() {
@@ -118,19 +129,30 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                 }
             }
 
+            // create text and lines for the editor
             let editor_text = Text::from(lines_with_cursor);
             let editor_paragraph = Paragraph::new(editor_text)
-                .block(editor_block.clone())
+                .block(Block::default())
                 .alignment(ratatui::layout::Alignment::Left);
 
+            let lines_text = Text::from(line_numbers);
+            let lines_paragraph = Paragraph::new(lines_text)
+                .block(Block::default())
+                .alignment(ratatui::layout::Alignment::Right);
+
             // Render the blocks in the nested layout
-            frame.render_widget(editor_paragraph, outer_layout[1]);
+            frame.render_widget(lines_paragraph, editor_layout[0]);
+            frame.render_widget(editor_paragraph, editor_layout[1]);
         })?;
 
         if let event::Event::Key(KeyEvent { code, modifiers, .. }) = event::read()? {
+            if editor.command_mode {
+                handle_command(editor, code, modifiers);
+                continue;
+            }
             match (code, modifiers) {
-                (_, KeyModifiers::CONTROL) => {
-                    ctrl::handle_ctrl(editor, code, modifiers);
+                (_, KeyModifiers::CONTROL) | (_, KeyModifiers::META) => {
+                    handle_ctrl(editor, code, modifiers);
                 }
                 (KeyCode::Backspace, _) => {
                     editor.backspace();

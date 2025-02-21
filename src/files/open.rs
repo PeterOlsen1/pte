@@ -23,20 +23,20 @@ pub fn open_file(editor: &mut Editor) {
                 }
                 Err(_) => {
                     editor.text = String::from("Error reading file");
-                    editor.notification = String::from("Error reading file");
+                    editor.notif_text = String::from("Error reading file");
                 }
             }
         },
         Err(_) => {
             editor.filename = String::from("error");
-            editor.notification = String::from("Failed to open file!");
+            editor.notif_text = String::from("Failed to open file!");
             editor.lines = Vec::new();
             editor.lines.push(String::from("Failed to open file!"));
         }
     }
 
     if !file_exists {
-        editor.notification = String::from("New file created");
+        editor.notif_text = String::from("New file created");
     }
     // else {
 }
