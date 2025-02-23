@@ -23,7 +23,7 @@ use files::open::open_file;
 use editor::{
     editor::Editor,
     input::{
-        handle_ctrl, handle_command
+        handle_ctrl, handle_command, handle_ctrl_shift
     },
 };
 
@@ -61,6 +61,14 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
     loop {
         terminal.draw(|frame| {
             let size = frame.area();
+            let columns = size.height as usize - 3;
+            let middle = columns / 2;
+            let cursor_line = editor.cursors[0].line as usize;
+            let start = if cursor_line > middle {
+                cursor_line - middle
+            } else {
+                0
+            };
     
             // outer layout to add the header and the editor
             let outer_layout = Layout::default()
@@ -102,12 +110,13 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
             // add cursor to editor text
             let mut lines_with_cursor = Vec::new();
             let mut line_numbers = Vec::new();
-            let lines = &editor.lines;
+            let lines = &editor.lines[start..];
             
             // get cursor position
             let cursor_line = editor.cursors[0].line as usize;
             let col = editor.cursors[0].col as usize;
-            for (index, line) in lines.iter().enumerate() {
+            for (mut index, line) in lines.iter().enumerate() {
+                index += start;
                 line_numbers.push(Line::styled(
                     format!("{:4}  ", index + 1),
                     Style::default().fg(Color::Cyan),
@@ -152,14 +161,18 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
             match (code, modifiers) {
                 (_, KeyModifiers::CONTROL) => {
                     if modifiers.contains(KeyModifiers::SHIFT) {
-                        //handle_ctrl_shift(editor, code, modifiers);
+                        handle_ctrl_shift(editor, code, modifiers);
                     }
-                    handle_ctrl(editor, code, modifiers);
+                    else {
+                        handle_ctrl(editor, code, modifiers);
+                    }
                 }
                 (KeyCode::Tab, _) => {
+                    editor.changes_saved = false;
                     editor.tab();
                 }
                 (KeyCode::Backspace, _) => {
+                    editor.changes_saved = false;
                     if modifiers.contains(KeyModifiers::SHIFT) {
                         editor.backspace_word();
                     } 
@@ -174,6 +187,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     break;
                 }
                 (KeyCode::Char(' '), _) => {
+                    editor.changes_saved = false;
                     editor.insert(' ');
                 }
                 (KeyCode::Right, _) => {
@@ -209,6 +223,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     }
                 }
                 _ => {
+                    editor.changes_saved = false;
                     editor.insert(code.to_string().chars().next().unwrap());
                 }
             }

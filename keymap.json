@@ -1,0 +1,20 @@
+{
+    "ctrl + s": "save",
+    "ctrl + o": "open",
+    "ctrl + z": "undo",
+    "ctrl + v": "paste",
+    "ctrl + g": "goto",
+    "ctrl + f": "find",
+
+
+    "right": "right",
+    "left": "left",
+    "up": "up",
+    "down": "down",
+    "shift + right": "right word",
+    "shift + left": "left word",
+    "shift + up": "up 5",
+    "shift + down": "down 5",
+    "ctrl + right": "right line",
+    "ctrl + left": "left line"
+}

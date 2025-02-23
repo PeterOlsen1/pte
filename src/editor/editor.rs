@@ -2,7 +2,8 @@ use std::collections::VecDeque;
 
 use super::{
     cursor::Cursor,
-    commands::Command
+    commands::Command,
+    finder::Finder
 };
 
 pub struct Editor {
@@ -10,10 +11,13 @@ pub struct Editor {
     pub lines: Vec<String>,
     pub cursors: Vec<Cursor>,
     pub filename: String,
+    pub file_to_open: String,
     pub history: VecDeque<Vec<String>>,
     pub notif_text: String,
     pub command_mode: bool,
     pub command: Command,
+    pub changes_saved: bool,
+    pub finder: Finder
 }
 
 impl Editor {
@@ -23,10 +27,13 @@ impl Editor {
             lines: Vec::new(),
             cursors: Vec::new(),
             filename: String::new(),
+            file_to_open: String::new(),
             history: VecDeque::new(),
             notif_text: String::from("Editor mode"),
             command_mode: false,
             command: Command::new(),
+            changes_saved: true,
+            finder: Finder::new()
         };
 
         temp.cursors.push(Cursor::new());
@@ -175,7 +182,7 @@ impl Editor {
     pub fn tab(&mut self) {
         for cursor in &mut self.cursors {
             let col = cursor.col as usize;
-            let mut tabs = 1;
+            let mut tabs = 0;
 
             //auto tab if previous line was tabbed in
             if cursor.line > 1 {
@@ -204,8 +211,18 @@ impl Editor {
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;
             let line = &mut self.lines[cursor.line as usize];
-            let new_line = line.split_off(cursor_x);
-            self.lines.insert(cursor.line as usize + 1, new_line);
+            let chars: Vec<char> = line.chars().collect();
+            let mut i = 0;
+            while i < chars.len() && chars[i] == ' ' {
+                i += 1;
+            }
+            let tabs = i / 4;
+
+            let new_line = &mut line.split_off(cursor_x);
+            for _ in 0..tabs {
+                new_line.push_str("    ");
+            }
+            self.lines.insert(cursor.line as usize + 1, new_line.to_owned());
             cursor.line += 1;
             cursor.col = 0;
         }

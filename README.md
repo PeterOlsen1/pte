@@ -9,7 +9,7 @@ TODO:
 * Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?)
 * Copy
 * Finding substring (CTRL + F) refine this
+* Smart file opening?
 * Delete tabs
 * More editor tabs?
-* Open files
 * run terminal commands

@@ -4,8 +4,11 @@ pub enum Command {
     GotoLine,
     MoveCursor,
     Find,
+    FindSelection,
+    OpenFile,
     AddCharater,
     DeleteCharacter,
+    SavePrompt
 }
 
 impl Command {

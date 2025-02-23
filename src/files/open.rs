@@ -20,6 +20,13 @@ pub fn open_file(editor: &mut Editor) {
                 Ok(_) => {
                     editor.text = contents;
                     editor.lines = editor.text.lines().map(|s| s.to_string()).collect();
+                    editor.notif_text = String::from("Edit mode");
+                    editor.command_mode = false;
+                    editor.history.clear();
+
+                    editor.cursors = vec![editor.cursors[0].clone()];
+                    editor.cursors[0].line = 0;
+                    editor.cursors[0].col = 0;
                 }
                 Err(_) => {
                     editor.text = String::from("Error reading file");
