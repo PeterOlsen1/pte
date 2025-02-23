@@ -148,8 +148,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                 handle_command(editor, code, modifiers);
                 continue;
             }
+
             match (code, modifiers) {
-                (_, KeyModifiers::CONTROL) | (_, KeyModifiers::META) => {
+                (_, KeyModifiers::CONTROL) => {
                     if modifiers.contains(KeyModifiers::SHIFT) {
                         //handle_ctrl_shift(editor, code, modifiers);
                     }
@@ -171,10 +172,20 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     editor.insert(' ');
                 }
                 (KeyCode::Right, _) => {
-                    editor.right();
+                    if modifiers.contains(KeyModifiers::SHIFT) {
+                        editor.right_word();
+                    } 
+                    else {
+                        editor.right();
+                    }
                 }
                 (KeyCode::Left, _) => {
-                    editor.left();
+                    if modifiers.contains(KeyModifiers::SHIFT) {
+                        editor.left_word();
+                    } 
+                    else {
+                        editor.left();
+                    }
                 }
                 (KeyCode::Up, _) => {
                     editor.up();
