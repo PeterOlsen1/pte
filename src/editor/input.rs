@@ -5,6 +5,9 @@ use super::{
     commands::Command,
     finder::Finder
 };
+
+use std::{env, fs};
+
 use crate::files::{
     open::open_file, save::save_file
 };
@@ -177,6 +180,27 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                 }
             }
             return;
+        }
+        Command::OpenFile => {
+            if code == KeyCode::Tab {
+                let dir =  match env::current_dir() {
+                    Ok(dir) => dir,
+                    Err(_) => {
+                        editor.notif_text = String::from("Error getting current directory");
+                        return;
+                    }
+                };
+    
+                // editor.notif_text = format!("Current directory: {}", dir.display());
+                fs::read_dir(dir).unwrap().for_each(|entry| {
+                    match entry {
+                        Ok(entry) => {
+                            editor.dbg(entry.file_name().to_str().unwrap().to_string());
+                        }
+                        Err(_) => {}
+                    }
+                });
+            }
         }
         _ => {}
     }
