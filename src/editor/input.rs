@@ -15,6 +15,7 @@ use crate::files::save::save_file;
  * We should probably pass in current state of the editor too, if we want to move the cursor
  */
 pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -> () {
+
     match code {
         KeyCode::Char('z') => {
             editor.notif_text = String::from("Undo");
@@ -25,6 +26,7 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
         }
         KeyCode::Char('v') => {
             editor.notif_text = String::from("Paste from clipboard");
+            editor.insert_string("Hello, world!".to_string());
         }
         KeyCode::Char('s') => {
             save_file(&editor);
@@ -53,13 +55,19 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
             editor.notif_text = String::from("Select word / duplicates");
         }
         KeyCode::Char('f') => {
-            editor.notif_text = String::from("Find occurence");
+            editor.notif_text = String::from("Find substring: ");
+            editor.command_mode = true;
+            editor.command = Command::Find;
+        }
+        KeyCode::Char('h') => { // CTRL + Backspace maps to CTRL + h
+            editor.notif_text = String::from("Delete line");
+            editor.backspace_line();
         }
         KeyCode::Right => {
-            editor.right_word();
+            editor.right_line();
         }
         KeyCode::Left => {
-            editor.left_word();
+            editor.left_line();
         }
         _ => {
             editor.notif_text = String::from("Invalid command");
@@ -103,7 +111,7 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
             }
             KeyCode::Char('a') | KeyCode::Char('j') | KeyCode::Left => {
                 if modifier == KeyModifiers::CONTROL {
-                    editor.left_word();
+                    editor.left_line();
                 }
                 else {
                     editor.left();
@@ -111,7 +119,7 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
             }
             KeyCode::Char('d') | KeyCode::Char('l') | KeyCode::Right => {
                 if modifier == KeyModifiers::CONTROL {
-                    editor.right_word();
+                    editor.right_line();
                 } 
                 else {
                     editor.right();
@@ -171,6 +179,28 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                             col = editor.lines[line as usize - 1].len() as u16;
                         } 
                         editor.cursors[0].col = col;
+                    }
+                }
+                Command::Find => {
+                    editor.command_mode = false;
+
+                    // only keep one cursor
+                    if editor.cursors.len() > 1 {
+                        editor.cursors = vec![editor.cursors[0].clone()];
+                    }
+
+                    let query: String = editor.notif_text.split_off("Find substring: ".len());
+                    if query.len() == 0 {
+                        editor.notif_text = String::from("Invalid substring!");
+                        return;
+                    }
+
+                    for i in 0..editor.lines.len() {
+                        if editor.lines[i].contains(&query) {
+                            editor.cursors[0].line = i as u16;
+                            editor.cursors[0].col = editor.lines[i].find(&query).unwrap() as u16;
+                            break;
+                        }
                     }
                 }
                 _ => {}

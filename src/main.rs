@@ -157,11 +157,10 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     handle_ctrl(editor, code, modifiers);
                 }
                 (KeyCode::Tab, _) => {
-                    editor.insert('\t');
+                    editor.tab();
                 }
                 (KeyCode::Backspace, _) => {
-                    dbg!(modifiers);
-                    if (modifiers.contains(KeyModifiers::SHIFT)) {
+                    if modifiers.contains(KeyModifiers::SHIFT) {
                         editor.backspace_word();
                     } 
                     else {
@@ -194,10 +193,20 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     }
                 }
                 (KeyCode::Up, _) => {
-                    editor.up();
+                    if modifiers.contains(KeyModifiers::SHIFT) {
+                        editor.up_five();
+                    } 
+                    else {
+                        editor.up();
+                    }
                 }
                 (KeyCode::Down, _) => {
-                    editor.down()
+                    if modifiers.contains(KeyModifiers::SHIFT) {
+                        editor.down_five();
+                    } 
+                    else {
+                        editor.down();
+                    }
                 }
                 _ => {
                     editor.insert(code.to_string().chars().next().unwrap());

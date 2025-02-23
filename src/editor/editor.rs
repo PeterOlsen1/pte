@@ -76,9 +76,19 @@ impl Editor {
             let col = cursor.col as usize;
     
             if col > 0 {
-                let line = &mut self.lines[cursor.line as usize];
-                line.remove(col as usize - 1);
-                cursor.col -= 1;
+                // if col > 4 && &self.lines[cursor.line as usize][col - 4..col] == "    " {
+                //     let line = &mut self.lines[cursor.line as usize];
+                //     line.remove(col - 4);
+                //     line.remove(col - 3);
+                //     line.remove(col - 2);
+                //     line.remove(col - 1);
+                //     cursor.col -= 4;
+                // } 
+                // else {
+                    let line = &mut self.lines[cursor.line as usize];
+                    line.remove(col as usize - 1);
+                    cursor.col -= 1;
+                // }
             } 
             else if cursor.line == 0 {
                 edited_flag = false;
@@ -130,27 +140,67 @@ impl Editor {
         }
     }
 
+    pub fn backspace_line(&mut self) {
+        self.push_history();
+
+        for cursor in &mut self.cursors {
+            if cursor.col > 0 {
+                let line = &mut self.lines[cursor.line as usize];
+                line.clear();
+                cursor.col = 0;
+            }
+        }
+    }
+
     pub fn insert(&mut self, c: char) {
+        self.push_history();
+
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;
             let line = &mut self.lines[cursor.line as usize];
             line.insert(cursor_x, c);
             cursor.col += 1;
         }
-
-        self.push_history();
     }
 
-    // pub fn insert_string(&mut self, s: String) {
-    //     for cursor in &mut self.cursors {
-    //         let cursor_x = cursor.col as usize;
-    //         let line = &mut self.lines[cursor.line as usize];
-    //         line.insert(cursor_x, s);
-    //         cursor.col += 1;
-    //     }
-    // }
+    pub fn insert_string(&mut self, s: String) {
+        for cursor in &mut self.cursors {
+            let cursor_x = cursor.col as usize;
+            let line = &mut self.lines[cursor.line as usize];
+            line.insert_str(cursor_x, s.as_str());
+            cursor.col += s.len() as u16;
+        }
+    }
 
+    pub fn tab(&mut self) {
+        for cursor in &mut self.cursors {
+            let col = cursor.col as usize;
+            let mut tabs = 1;
+
+            //auto tab if previous line was tabbed in
+            if cursor.line > 1 {
+                let prev_line = self.lines[cursor.line as usize - 1].clone();
+                let chars: Vec<char> = prev_line.chars().collect();
+                let mut i = 0;
+
+                while i < chars.len() && chars[i] == ' ' {
+                    i += 1;
+                }
+
+                tabs += i / 4;
+            }
+
+            let line = &mut self.lines[cursor.line as usize];
+
+            for _ in 0..tabs {
+                line.insert_str(col, "    ");
+                cursor.col += 4;
+            }
+        }
+    }
     pub fn new_line(&mut self) {
+        self.push_history();
+        
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;
             let line = &mut self.lines[cursor.line as usize];
@@ -159,8 +209,6 @@ impl Editor {
             cursor.line += 1;
             cursor.col = 0;
         }
-
-        self.push_history();
     }
 
 
@@ -182,7 +230,7 @@ impl Editor {
         }
     }
 
-    pub fn right_word(&mut self) {
+    pub fn right_line(&mut self) {
         for cursor in &mut self.cursors {
             while (cursor.col as usize) < self.lines[cursor.line as usize].len() {
                 cursor.col += 1;
@@ -190,7 +238,43 @@ impl Editor {
         }
     }
 
+    pub fn right_word(&mut self) {
+        for cursor in &mut self.cursors {
+            let line = &self.lines[cursor.line as usize];
+            let chars: Vec<char> = line.chars().collect();
+            let mut col = cursor.col as usize;
+
+            if chars[col] == ' ' {
+                col += 1;
+            }
+
+            while col < chars.len() && chars[col] != ' ' {
+                col += 1;
+            }
+
+            cursor.col = col as u16;
+        }
+    }
+
     pub fn left_word(&mut self) {
+        for cursor in &mut self.cursors {
+            let line = &self.lines[cursor.line as usize];
+            let chars: Vec<char> = line.chars().collect();
+            let mut col = cursor.col as usize;
+            
+            if chars[col - 1] == ' ' {
+                col -= 1;
+            }
+
+            while col > 0 && chars[col - 1] != ' ' {
+                col -= 1;
+            }
+
+            cursor.col = col as u16;
+        }
+    }
+
+    pub fn left_line(&mut self) {
         for cursor in &mut self.cursors {
             while (cursor.col as usize) > 0 {
                 cursor.col -= 1;
@@ -213,6 +297,12 @@ impl Editor {
         }
     }
 
+    pub fn down_five(&mut self) {
+        for _ in 0..5 {
+            self.down();
+        }
+    }
+
     pub fn down(&mut self) {
         for cursor in &mut self.cursors {
             cursor.line += 1;
@@ -226,6 +316,12 @@ impl Editor {
                     cursor.col = current_line_len as u16;
                 }
             }
+        }
+    }
+
+    pub fn up_five(&mut self) {
+        for _ in 0..5 {
+            self.up();
         }
     }
 

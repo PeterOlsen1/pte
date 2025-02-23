@@ -3,6 +3,9 @@ pub enum Command {
     NULL,
     GotoLine,
     MoveCursor,
+    Find,
+    AddCharater,
+    DeleteCharacter,
 }
 
 impl Command {

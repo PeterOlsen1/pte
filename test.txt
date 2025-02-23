@@ -1,16 +1,6 @@
-This is a test file.
-This is line 2.
-this is line 3 i wrote.
-
-isn't this so awesome??
-
-hello, world!
-
-i am writing some more text on here
-
-here i am with more text
-
-
+function testing() {
+    this is me testing a thing.
+        this is me testing another thing.
 
 
 
@@ -20,6 +10,16 @@ here i am with more text
 
 
 line 22!
+
+
+
+
+
+
+
+
+
+
 
 
 
