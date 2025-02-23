@@ -187,6 +187,7 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                     Ok(dir) => dir,
                     Err(_) => {
                         editor.notif_text = String::from("Error getting current directory");
+                        editor.command_mode = false;
                         return;
                     }
                 };
@@ -281,6 +282,12 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
 
                     editor.finder.query = query;
                     editor.finder.find(editor.lines.clone(), editor.cursors[0].line);
+
+                    if (editor.finder.search_results.is_empty()) {
+                        editor.notif_text = String::from("No results found");
+                        editor.command_mode = false;
+                        return;
+                    }
 
                     editor.command = Command::FindSelection;
                     editor.cursors[0].line = editor.finder.search_results[editor.finder.search_index].0;
