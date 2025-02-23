@@ -16,6 +16,10 @@ use crate::files::save::save_file;
  */
 pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -> () {
     match code {
+        KeyCode::Char('z') => {
+            editor.notif_text = String::from("Undo");
+            editor.undo();
+        }
         KeyCode::Char('c') => {
             editor.notif_text = String::from("Copy from clipboard");
         }

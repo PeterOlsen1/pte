@@ -5,6 +5,7 @@ It is by no means a *polished* text editor, and it is basically just the result 
 
 TODO:
 * Figure out suitable keybinds
+  * moving mode (ctrl + m doesnt work)
 * Tabbing (writing \t didn't work?) (see about auto tabbing length (check line above))
 * Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?)
 * Copy + Paste

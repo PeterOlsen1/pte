@@ -114,12 +114,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                 ));
 
                 if index == cursor_line {
-                    // Insert cursor symbol (`^`) at the correct column
+                    // Insert cursor symbol (`█`) at the correct column
                     let mut line_with_cursor = line.to_string();
                     if col < line_with_cursor.len() {
-                        line_with_cursor.insert(col, '^'); // cursor position
+                        line_with_cursor.insert(col, '█'); // cursor position
                     } else {
-                        line_with_cursor.push('^'); // cursor at the end of the line
+                        line_with_cursor.push('█'); // cursor at the end of the line
                     }
                     lines_with_cursor.push(Line::raw(line_with_cursor));
                 } else {
@@ -160,7 +160,13 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     editor.insert('\t');
                 }
                 (KeyCode::Backspace, _) => {
-                    editor.backspace();
+                    dbg!(modifiers);
+                    if (modifiers.contains(KeyModifiers::SHIFT)) {
+                        editor.backspace_word();
+                    } 
+                    else {
+                        editor.backspace();
+                    }
                 }
                 (KeyCode::Enter, _) => {
                     editor.new_line();

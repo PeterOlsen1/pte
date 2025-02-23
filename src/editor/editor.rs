@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use super::{
     cursor::Cursor,
     commands::Command
@@ -8,6 +10,7 @@ pub struct Editor {
     pub lines: Vec<String>,
     pub cursors: Vec<Cursor>,
     pub filename: String,
+    pub history: VecDeque<Vec<String>>,
     pub notif_text: String,
     pub command_mode: bool,
     pub command: Command,
@@ -20,6 +23,7 @@ impl Editor {
             lines: Vec::new(),
             cursors: Vec::new(),
             filename: String::new(),
+            history: VecDeque::new(),
             notif_text: String::from("Editor mode"),
             command_mode: false,
             command: Command::new(),
@@ -29,6 +33,30 @@ impl Editor {
         temp
     }
 
+    pub fn push_history(&mut self) {
+        if (self.history.len() as u16) > 100 {
+            self.history.pop_front();
+        }
+
+        let mut temp = Vec::new();
+        for line in &self.lines {
+            temp.push(line.clone());
+        }
+
+        self.history.push_back(temp);
+    }
+
+    pub fn undo(&mut self) {
+        let lines = self.history.pop_back();
+        match lines {
+            Some(lines) => {
+                self.lines = lines;
+            }
+            None => {
+                self.notif_text = String::from("No edits to undo!");
+            }
+        }
+    }
     /**
      * Get a mutable reference to the line we want to work on
      */
@@ -41,8 +69,10 @@ impl Editor {
      * append current line to the last
      */
     pub fn backspace(&mut self) {
+        let mut edited_flag = true;
+        self.push_history();
+
         for cursor in &mut self.cursors {
-            let line = cursor.line as usize;
             let col = cursor.col as usize;
     
             if col > 0 {
@@ -50,10 +80,11 @@ impl Editor {
                 line.remove(col as usize - 1);
                 cursor.col -= 1;
             } 
-            else if line == 0 {
-                return;
+            else if cursor.line == 0 {
+                edited_flag = false;
+                continue;
             } 
-            else if line > 0 {
+            else if cursor.line > 0 {
                 let prev_len = self.lines[cursor.line as usize - 1].len();
                 let line = self.lines[cursor.line as usize].clone();
     
@@ -62,6 +93,40 @@ impl Editor {
                 cursor.line -= 1;
                 cursor.col = prev_len as u16;
             }
+        }
+
+        if !edited_flag {
+            self.history.pop_back();
+        }
+    }
+
+    pub fn backspace_word(&mut self) {
+        let mut edited_flag = true;
+        self.push_history();
+
+        //iterate over all cursors
+        for cursor in &mut self.cursors {
+            let line = &mut self.lines[cursor.line as usize];
+            let chars: Vec<char> = line.chars().collect();
+
+            //remove 1 if it is a space
+            if chars[cursor.col as usize - 1] == ' ' {
+                line.remove(cursor.col as usize - 1);
+                cursor.col -= 1;
+                edited_flag = true;
+                continue;
+            }
+            
+            //remove all characters until a space
+            while chars[cursor.col as usize - 1] != ' ' && cursor.col > 0 {
+                line.remove(cursor.col as usize - 1);
+                cursor.col -= 1;
+                edited_flag = true;
+            }
+        }
+
+        if !edited_flag {
+            self.history.pop_back();
         }
     }
 
@@ -72,7 +137,18 @@ impl Editor {
             line.insert(cursor_x, c);
             cursor.col += 1;
         }
+
+        self.push_history();
     }
+
+    // pub fn insert_string(&mut self, s: String) {
+    //     for cursor in &mut self.cursors {
+    //         let cursor_x = cursor.col as usize;
+    //         let line = &mut self.lines[cursor.line as usize];
+    //         line.insert(cursor_x, s);
+    //         cursor.col += 1;
+    //     }
+    // }
 
     pub fn new_line(&mut self) {
         for cursor in &mut self.cursors {
@@ -83,7 +159,13 @@ impl Editor {
             cursor.line += 1;
             cursor.col = 0;
         }
+
+        self.push_history();
     }
+
+
+    //=================================================================================================
+    // CURSOR MOVING FUNCTIONS
 
     pub fn right(&mut self) {
         for cursor in &mut self.cursors {
