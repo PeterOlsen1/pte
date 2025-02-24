@@ -35,7 +35,6 @@ pub fn open_file(editor: &mut Editor) {
             }
         },
         Err(_) => {
-            editor.filename = String::from("error");
             editor.notif_text = String::from("Failed to open file!");
             editor.lines = Vec::new();
             editor.lines.push(String::from("Failed to open file!"));

@@ -192,13 +192,27 @@ impl Editor {
     }
 
     pub fn tab(&mut self) {
+        self.push_history();
+        
         for cursor in &mut self.cursors {
             let col = cursor.col as usize;
-            let mut tabs = 0;
+            let mut tabs = 1;
 
             //auto tab if previous line was tabbed in
             if cursor.line > 1 {
+
+                //search for the last line that is not empty?
                 let prev_line = self.lines[cursor.line as usize - 1].clone();
+
+                // let mut prev_line = String::from("");
+                // let mut i = 0;
+                // while i > 1 && prev_line.len() == 0 {
+                //     prev_line = self.lines[cursor.line as usize - 1 - i].clone();
+                //     i += 1;
+                // }
+
+                // dbg!(&prev_line);
+                
                 let chars: Vec<char> = prev_line.chars().collect();
                 let mut i = 0;
 
@@ -207,6 +221,11 @@ impl Editor {
                 }
 
                 tabs += i / 4;
+
+                //only give the user an extra tab if the last charcter was a {
+                if chars.len() != 0 && chars[chars.len() - 1] != '{' {
+                    tabs-= 1;
+                }
             }
 
             let line = &mut self.lines[cursor.line as usize];
@@ -217,18 +236,26 @@ impl Editor {
             }
         }
     }
+
     pub fn new_line(&mut self) {
         self.push_history();
         
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;
             let line = &mut self.lines[cursor.line as usize];
+
+            //loop over the start of a line and see if we need to tab
             let chars: Vec<char> = line.chars().collect();
             let mut i = 0;
             while i < chars.len() && chars[i] == ' ' {
                 i += 1;
             }
-            let tabs = i / 4;
+
+            //extra space of the last character is a {
+            if chars.len() > 0 && chars[chars.len() - 1] == '{' {
+                i += 4;
+            }
+            let tabs = i as u16 / 4;
 
             let new_line = &mut line.split_off(cursor_x);
             for _ in 0..tabs {
@@ -236,7 +263,7 @@ impl Editor {
             }
             self.lines.insert(cursor.line as usize + 1, new_line.to_owned());
             cursor.line += 1;
-            cursor.col = 0;
+            cursor.col = tabs * 4;
         }
     }
 
@@ -273,6 +300,10 @@ impl Editor {
             let chars: Vec<char> = line.chars().collect();
             let mut col = cursor.col as usize;
 
+            if col == chars.len() {
+                continue;
+            }
+
             if chars[col] == ' ' {
                 col += 1;
             }
@@ -290,6 +321,10 @@ impl Editor {
             let line = &self.lines[cursor.line as usize];
             let chars: Vec<char> = line.chars().collect();
             let mut col = cursor.col as usize;
+
+            if col == 0 {
+                continue;
+            }
             
             if chars[col - 1] == ' ' && col > 0 {
                 col -= 1;
