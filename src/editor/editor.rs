@@ -291,7 +291,7 @@ impl Editor {
             let chars: Vec<char> = line.chars().collect();
             let mut col = cursor.col as usize;
             
-            if chars[col - 1] == ' ' {
+            if chars[col - 1] == ' ' && col > 0 {
                 col -= 1;
             }
 

@@ -6,9 +6,8 @@ It is by no means a *polished* text editor, and it is basically just the result 
 TODO:
 * Keep an undo enum type with our UNDOS so we can see do a whole bunch until a space?
 * Figure out suitable keybinds (especially for mac)
-* Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?)
+* Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?) (didn't work. ctrl + shift modifiers weird?)
 * Copy
-* Finding substring (CTRL + F) refine this
 * Smart file opening?
 * Delete tabs
 * More editor tabs?

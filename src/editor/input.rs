@@ -96,19 +96,40 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
  * @param modifier: KeyModifiers - The modifier of the key event (should be CTRL, maybe more?)
  */
 pub fn handle_ctrl_shift(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -> () {
-    todo!();
     match code {
         KeyCode::Right => {
-            //
+            for cursor in &mut editor.cursors {
+                let mut new_col = cursor.col + 1;
+                if new_col > editor.lines[cursor.line as usize].len() as u16 {
+                    new_col = editor.lines[cursor.line as usize].len() as u16;
+                }
+                cursor.expand_selection(cursor.line, new_col);
+            }
         }
         KeyCode::Left => {
-
+            for cursor in &mut editor.cursors {
+                if cursor.col == 0 {
+                    continue;
+                }
+                cursor.expand_selection(cursor.line, cursor.col - 1);
+            }
         }
         KeyCode::Up => {
-
+            for cursor in &mut editor.cursors {
+                if cursor.line == 0 {
+                    continue;
+                }
+                cursor.expand_selection(cursor.line - 1, cursor.col);
+            }
         }
         KeyCode::Down => {
-
+            for cursor in &mut editor.cursors {
+                let mut new_line = cursor.line + 1;
+                if new_line > editor.lines.len() as u16 {
+                    new_line = editor.lines.len() as u16;
+                }
+                cursor.expand_selection(new_line, cursor.col);
+            }
         }
         _ => {}
     }
@@ -283,7 +304,7 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                     editor.finder.query = query;
                     editor.finder.find(editor.lines.clone(), editor.cursors[0].line);
 
-                    if (editor.finder.search_results.is_empty()) {
+                    if editor.finder.search_results.is_empty() {
                         editor.notif_text = String::from("No results found");
                         editor.command_mode = false;
                         return;

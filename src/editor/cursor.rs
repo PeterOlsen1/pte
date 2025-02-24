@@ -15,6 +15,14 @@ impl Cursor {
             selection: ((0, 0), (0, 0)),
         }
     }
+
+    pub fn expand_selection(&mut self, line: u16, col: u16) {
+        if self.selection.0 == (0, 0) {
+            self.selection.0 = (self.line, self.col);
+        }
+        self.selection.1 = (line, col);
+    }
+
 }
 
 impl PartialEq for Cursor {
