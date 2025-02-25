@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use crate::{get_lines_len, get_line_len_int, get_line_len};
 
 use super::{
     cursor::Cursor,
@@ -106,7 +107,7 @@ impl Editor {
                 continue;
             } 
             else if cursor.line > 0 {
-                let prev_len = self.lines[cursor.line as usize - 1].len();
+                let prev_len = get_line_len_int!(self, cursor.line - 1);
                 let line = self.lines[cursor.line as usize].clone();
     
                 self.lines[cursor.line as usize - 1].push_str(&line);
@@ -269,14 +270,14 @@ impl Editor {
                 cursor.line = self.lines.len() as u16 - 1;
             }
 
-            if cursor.col as usize > self.lines[cursor.line as usize].len() {
-                cursor.col = self.lines[cursor.line as usize].len() as u16;
+            if cursor.col > get_line_len!(self, cursor) {
+                cursor.col = get_line_len!(self, cursor);
             }
         }
     }
     pub fn right(&mut self) {
         for cursor in &mut self.cursors {
-            if (cursor.col as usize) < self.lines[cursor.line as usize].len() {
+            if cursor.col < get_line_len!(self, cursor) {
                 cursor.col += 1;
             }
             else if cursor.line as usize == self.lines.len() - 1 {
@@ -291,7 +292,7 @@ impl Editor {
 
     pub fn right_line(&mut self) {
         for cursor in &mut self.cursors {
-            while (cursor.col as usize) < self.lines[cursor.line as usize].len() {
+            while cursor.col < get_line_len!(self, cursor) {
                 cursor.col += 1;
             }
         }
@@ -307,15 +308,20 @@ impl Editor {
                 continue;
             }
 
-            if chars[col] == ' ' {
-                col += 1;
-            }
+            // if chars[col] == ' ' {
+            //     col += 1;
+            // }
 
             while col < chars.len() && chars[col] != ' ' {
                 col += 1;
             }
 
             cursor.col = col as u16;
+
+            //if it is a tab, move the rest of the space
+            while cursor.col < get_line_len!(self, cursor) && chars[cursor.col as usize] == ' '  {
+                cursor.col += 1;
+            }
         }
     }
 
@@ -329,15 +335,20 @@ impl Editor {
                 continue;
             }
             
-            if chars[col - 1] == ' ' && col > 0 {
-                col -= 1;
-            }
+            // if chars[col - 1] == ' ' && col > 0 {
+            //     col -= 1;
+            // }
 
             while col > 0 && chars[col - 1] != ' ' {
                 col -= 1;
             }
 
             cursor.col = col as u16;
+
+            //if it is a tab, move the rest of the space
+            while cursor.col > 0 && chars[cursor.col as usize] == ' '  {
+                cursor.col += 1;
+            }
         }
     }
 
@@ -359,7 +370,7 @@ impl Editor {
             }
             else {
                 cursor.line -= 1;
-                cursor.col = self.lines[cursor.line as usize].len() as u16;
+                cursor.col = get_line_len!(self, cursor);
             }
         }
     }
@@ -378,9 +389,9 @@ impl Editor {
                 cursor.col = self.lines[self.lines.len() - 1].len() as u16;
             }
             else {
-                let current_line_len = self.lines[cursor.line as usize].len();
-                if (cursor.col as usize) > current_line_len {
-                    cursor.col = current_line_len as u16;
+                let current_line_len = get_line_len!(self, cursor);
+                if cursor.col > current_line_len {
+                    cursor.col = current_line_len;
                 }
             }
         }
@@ -397,8 +408,8 @@ impl Editor {
             if (cursor.line as usize) > 0 {
                 cursor.line -= 1;
 
-                if (self.lines[cursor.line as usize].len() as u16) < cursor.col {
-                    cursor.col = self.lines[cursor.line as usize].len() as u16;
+                if (get_line_len!(self, cursor)) < cursor.col {
+                    cursor.col = get_line_len!(self, cursor);
                 }
             }
         }

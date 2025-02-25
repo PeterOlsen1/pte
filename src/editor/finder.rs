@@ -1,5 +1,3 @@
-use super::editor::Editor;
-
 pub struct Finder {
     pub query: String,
     pub search_index: usize,
