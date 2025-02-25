@@ -6,6 +6,7 @@ It is by no means a *polished* text editor, and it is basically just the result 
 TODO:
 * Undos
   * Keep an enum present so we can see what action was done? maybe do more / less based on that enum
+  * Store cursors in the state too?
 * Figure out suitable keybinds (or at least some that suffice) (especially for mac)
 * Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?) (didn't work. ctrl + shift modifiers weird?)
   * When selected, hit right to put cursor at end, same with left

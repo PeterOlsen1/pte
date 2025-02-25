@@ -1,4 +1,4 @@
-mod files;
+mod utils;
 mod editor;
 
 use crossterm::{
@@ -18,7 +18,7 @@ use std::{
     env, io::{self, stdout}
 };
 
-use files::open::open_file;
+use utils::files::open_file;
 
 use editor::{
     editor::Editor,

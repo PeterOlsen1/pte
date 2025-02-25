@@ -8,9 +8,8 @@ use super::{
 
 use std::{env, fs};
 
-use crate::files::{
-    open::open_file, save::save_file
-};
+use crate::utils::files::{open_file, save_file};
+use crate::{get_line_len, get_line_len_int, get_lines_len};
 
 /**
  * Handle any CTRL + key events
@@ -100,8 +99,8 @@ pub fn handle_ctrl_shift(editor: &mut Editor, code: KeyCode, modifier: KeyModifi
         KeyCode::Right => {
             for cursor in &mut editor.cursors {
                 let mut new_col = cursor.col + 1;
-                if new_col > editor.lines[cursor.line as usize].len() as u16 {
-                    new_col = editor.lines[cursor.line as usize].len() as u16;
+                if new_col > get_line_len!(editor, cursor) {
+                    new_col = get_line_len!(editor, cursor);
                 }
                 cursor.expand_selection(cursor.line, new_col);
             }
@@ -125,8 +124,8 @@ pub fn handle_ctrl_shift(editor: &mut Editor, code: KeyCode, modifier: KeyModifi
         KeyCode::Down => {
             for cursor in &mut editor.cursors {
                 let mut new_line = cursor.line + 1;
-                if new_line > editor.lines.len() as u16 {
-                    new_line = editor.lines.len() as u16;
+                if new_line > get_lines_len!(editor) {
+                    new_line = get_lines_len!(editor);
                 }
                 cursor.expand_selection(new_line, cursor.col);
             }
@@ -274,8 +273,8 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
 
                     //parse line number
                     let mut line: u16 = string_parts[1].trim().parse().unwrap();
-                    if line > editor.lines.len() as u16 {
-                        line = editor.lines.len() as u16;
+                    if line > get_lines_len!(editor) {
+                        line = get_lines_len!(editor);
                     }
                     editor.cursors[0].line = line - 1;
 
@@ -283,8 +282,8 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                     if string_parts.len() > 2 {
                         let mut col: u16 = string_parts[2].trim().parse().unwrap();
                         
-                        if col > editor.lines[line as usize - 1].len() as u16 {
-                            col = editor.lines[line as usize - 1].len() as u16;
+                        if col > get_line_len_int!(editor, line - 1) {
+                            col = get_line_len_int!(editor, line - 1);
                         } 
                         editor.cursors[0].col = col;
                     }

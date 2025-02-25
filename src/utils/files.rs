@@ -1,10 +1,13 @@
 use crate::Editor;
 use std::{
     fs::OpenOptions, 
-    io::Read,
+    io::{Read, Write},
     path::Path
 };
 
+/**
+ * Opens the file specified in the editor.filename field
+ */
 pub fn open_file(editor: &mut Editor) {
     let file_path = Path::new(&editor.filename);
     let file_exists = file_path.exists();
@@ -44,5 +47,24 @@ pub fn open_file(editor: &mut Editor) {
     if !file_exists {
         editor.notif_text = String::from("New file created");
     }
-    // else {
+}
+
+
+/**
+ * Saves the file specified in the editor.filename field
+ */
+pub fn save_file(editor: &Editor) {
+    let file = std::fs::File::create(&editor.filename);
+
+    let content = editor.lines.join("\n");
+    match file {
+        Ok(mut file) => {
+            let write = file.write_all(content.as_bytes());
+            match write {
+                Ok(_) => {}
+                Err(_) => {}
+            }
+        }
+        Err(_) => {}
+    }
 }

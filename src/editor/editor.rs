@@ -6,14 +6,6 @@ use super::{
     finder::Finder
 };
 
-macro_rules! edbg {
-    ($editor:expr, $(string:expr)*) => {
-        $(
-            editor.lines.insert(0, $string.to_string());
-        )*
-    };
-}
-
 pub struct Editor {
     pub text: String,
     pub lines: Vec<String>,
