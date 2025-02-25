@@ -88,19 +88,20 @@ impl Editor {
             let col = cursor.col as usize;
     
             if col > 0 {
-                // if col > 4 && &self.lines[cursor.line as usize][col - 4..col] == "    " {
-                //     let line = &mut self.lines[cursor.line as usize];
-                //     line.remove(col - 4);
-                //     line.remove(col - 3);
-                //     line.remove(col - 2);
-                //     line.remove(col - 1);
-                //     cursor.col -= 4;
-                // } 
-                // else {
+                dbg!(&self.lines[cursor.line as usize][col - 4..col]);
+                if col > 4 && &self.lines[cursor.line as usize][col - 4..col] == "    " {
+                    let line = &mut self.lines[cursor.line as usize];
+                    line.remove(col - 4);
+                    line.remove(col - 3);
+                    line.remove(col - 2);
+                    line.remove(col - 1);
+                    cursor.col -= 4;
+                } 
+                else {
                     let line = &mut self.lines[cursor.line as usize];
                     line.remove(col as usize - 1);
                     cursor.col -= 1;
-                // }
+                }
             } 
             else if cursor.line == 0 {
                 edited_flag = false;
@@ -308,19 +309,24 @@ impl Editor {
                 continue;
             }
 
-            // if chars[col] == ' ' {
-            //     col += 1;
-            // }
+            //we are at a space but not at the start of a line, move to next word
+            //if they have 2 spaces, that's their problem
+            if chars[col] == ' ' && col != 0 {
+                col += 1;
+            }
 
             while col < chars.len() && chars[col] != ' ' {
                 col += 1;
+                continue;
             }
 
             cursor.col = col as u16;
 
-            //if it is a tab, move the rest of the space
-            while cursor.col < get_line_len!(self, cursor) && chars[cursor.col as usize] == ' '  {
-                cursor.col += 1;
+            //tabbing from the start of a line
+            if col == 0 {
+                while cursor.col < get_line_len!(self, cursor) && chars[cursor.col as usize] == ' '  {
+                    cursor.col += 1;
+                }
             }
         }
     }
@@ -335,9 +341,9 @@ impl Editor {
                 continue;
             }
             
-            // if chars[col - 1] == ' ' && col > 0 {
-            //     col -= 1;
-            // }
+            if chars[col - 1] == ' ' && col > 0 {
+                col -= 1;
+            }
 
             while col > 0 && chars[col - 1] != ' ' {
                 col -= 1;
