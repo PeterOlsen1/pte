@@ -107,6 +107,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                 .constraints([Constraint::Length(6), Constraint::Min(0)])
                 .split(outer_layout[1]);
 
+            // ensure cursors are within bounds
+            editor.adjust_cursors();
+
             // add cursor to editor text
             let mut lines_with_cursor = Vec::new();
             let mut line_numbers = Vec::new();

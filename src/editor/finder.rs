@@ -19,11 +19,17 @@ impl Finder {
         self.search_results.clear();
 
         for (i, line) in lines.iter().enumerate() {
-            if line.contains(&self.query) {
-                if i < current_line as usize {
-                    self.search_index += 1;
-                }
-                self.search_results.push((i as u16, line.find(&self.query).unwrap() as u16));
+            let mut line_clone = line.clone();
+            line_clone.make_ascii_lowercase();
+            let mut query_clone = self.query.clone();
+            query_clone.make_ascii_lowercase();
+            let mut chopped_len = 0;
+
+            while line_clone.contains(&query_clone) {
+                let index = line_clone.find(&query_clone).unwrap();
+                self.search_results.push((i as u16, index as u16 + chopped_len + query_clone.len() as u16));
+                chopped_len += (index + query_clone.len()) as u16;
+                line_clone = line_clone.split_off(index + query_clone.len());
             }
         }
     }

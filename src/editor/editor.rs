@@ -271,6 +271,17 @@ impl Editor {
     //=================================================================================================
     // CURSOR MOVING FUNCTIONS
 
+    pub fn adjust_cursors(&mut self) {
+        for cursor in &mut self.cursors {
+            if cursor.line as usize >= self.lines.len() {
+                cursor.line = self.lines.len() as u16 - 1;
+            }
+
+            if cursor.col as usize > self.lines[cursor.line as usize].len() {
+                cursor.col = self.lines[cursor.line as usize].len() as u16;
+            }
+        }
+    }
     pub fn right(&mut self) {
         for cursor in &mut self.cursors {
             if (cursor.col as usize) < self.lines[cursor.line as usize].len() {

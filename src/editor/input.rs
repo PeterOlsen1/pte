@@ -178,13 +178,13 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                     editor.finder.next();
                     editor.cursors[0].line = editor.finder.search_results[editor.finder.search_index].0;
                     editor.cursors[0].col = editor.finder.search_results[editor.finder.search_index].1;
-                    editor.notif_text = format!("{} of {}", editor.finder.search_index + 1, editor.finder.search_results.len());
+                    editor.notif_text = format!("{} of {} (use ← or →)", editor.finder.search_index + 1, editor.finder.search_results.len());
                 }
                 KeyCode::Left | KeyCode::Up => {
                     editor.finder.prev();
                     editor.cursors[0].line = editor.finder.search_results[editor.finder.search_index].0;
                     editor.cursors[0].col = editor.finder.search_results[editor.finder.search_index].1;
-                    editor.notif_text = format!("{} of {}", editor.finder.search_index + 1, editor.finder.search_results.len());
+                    editor.notif_text = format!("{} of {} (use ← or →)", editor.finder.search_index + 1, editor.finder.search_results.len());
                 }
                 KeyCode::Enter => {
                     editor.cursors[0].line = editor.finder.search_results[editor.finder.search_index].0;
@@ -197,7 +197,7 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                     editor.notif_text = String::from("Editor mode");
                 }
                 _ => {
-                    editor.notif_text = String::from("Invalid command. Use arrow keys to navigate search results");
+                    editor.notif_text = String::from("Invalid command (use ← or → to navigate)");
                 }
             }
             return;
@@ -313,7 +313,7 @@ pub fn handle_command(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers
                     editor.command = Command::FindSelection;
                     editor.cursors[0].line = editor.finder.search_results[editor.finder.search_index].0;
                     editor.cursors[0].col = editor.finder.search_results[editor.finder.search_index].1;
-                    editor.notif_text = format!("{} of {}", editor.finder.search_index + 1, editor.finder.search_results.len());
+                    editor.notif_text = format!("{} of {} (use ← or →)", editor.finder.search_index + 1, editor.finder.search_results.len());
 
                     // for i in 0..editor.lines.len() {
                     //     if editor.lines[i].contains(&query) {
