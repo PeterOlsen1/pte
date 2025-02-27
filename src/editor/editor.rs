@@ -1,10 +1,10 @@
-use std::collections::VecDeque;
 use crate::{get_lines_len, get_line_len_int, get_line_len};
 
 use super::{
     cursor::Cursor,
     commands::Command,
-    finder::Finder
+    finder::Finder,
+    history::{History, HistoryEntry}
 };
 
 pub struct Editor {
@@ -13,7 +13,7 @@ pub struct Editor {
     pub cursors: Vec<Cursor>,
     pub filename: String,
     pub file_to_open: String,
-    pub history: VecDeque<Vec<String>>,
+    pub history: History,
     pub notif_text: String,
     pub command_mode: bool,
     pub command: Command,
@@ -29,7 +29,7 @@ impl Editor {
             cursors: Vec::new(),
             filename: String::new(),
             file_to_open: String::new(),
-            history: VecDeque::new(),
+            history: History::new(),
             notif_text: String::from("Editor mode"),
             command_mode: false,
             command: Command::new(),
@@ -44,31 +44,7 @@ impl Editor {
     pub fn dbg(&mut self, string: String) {
         self.lines.insert(0, string);
     }
-    
-    pub fn push_history(&mut self) {
-        if (self.history.len() as u16) > 100 {
-            self.history.pop_front();
-        }
 
-        let mut temp = Vec::new();
-        for line in &self.lines {
-            temp.push(line.clone());
-        }
-
-        self.history.push_back(temp);
-    }
-
-    pub fn undo(&mut self) {
-        let lines = self.history.pop_back();
-        match lines {
-            Some(lines) => {
-                self.lines = lines;
-            }
-            None => {
-                self.notif_text = String::from("No edits to undo!");
-            }
-        }
-    }
     /**
      * Get a mutable reference to the line we want to work on
      */
@@ -82,7 +58,9 @@ impl Editor {
      */
     pub fn backspace(&mut self) {
         let mut edited_flag = true;
-        self.push_history();
+        self.history.push_history(
+            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Backspace)
+        );
 
         for cursor in &mut self.cursors {
             let col = cursor.col as usize;
@@ -125,7 +103,9 @@ impl Editor {
 
     pub fn backspace_word(&mut self) {
         let mut edited_flag = true;
-        self.push_history();
+        self.history.push_history(
+            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Backspace)
+        );
 
         //iterate over all cursors
         for cursor in &mut self.cursors {
@@ -154,7 +134,8 @@ impl Editor {
     }
 
     pub fn backspace_line(&mut self) {
-        self.push_history();
+        let history = HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Backspace);
+        self.history.push_history(history);
 
         for cursor in &mut self.cursors {
             if cursor.col > 0 {
@@ -166,7 +147,9 @@ impl Editor {
     }
 
     pub fn insert(&mut self, c: char) {
-        self.push_history();
+        self.history.push_history(
+            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::AddChar)
+        );
 
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;
@@ -186,7 +169,9 @@ impl Editor {
     }
 
     pub fn tab(&mut self) {
-        self.push_history();
+        self.history.push_history(
+            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Tab)
+        );
         
         for cursor in &mut self.cursors {
             let col = cursor.col as usize;
@@ -232,7 +217,9 @@ impl Editor {
     }
 
     pub fn new_line(&mut self) {
-        self.push_history();
+        self.history.push_history(
+            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::AddNewLine)
+        );
         
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;

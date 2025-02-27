@@ -24,7 +24,11 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
     match code {
         KeyCode::Char('z') => {
             editor.notif_text = String::from("Undo");
-            editor.undo();
+            editor.history.undo();
+        }
+        KeyCode::Char('y') => {
+            editor.notif_text = String::from("Redo");
+            editor.history.redo();
         }
         KeyCode::Char('c') => {
             editor.notif_text = String::from("Copy from clipboard");
