@@ -12,8 +12,8 @@ pub struct History {
 
 #[derive(Clone)]
 pub struct HistoryEntry {
-    cursors: Vec<Cursor>,
-    lines: Vec<String>,
+    pub cursors: Vec<Cursor>,
+    pub lines: Vec<String>,
     command: Command,
 }
 
@@ -47,29 +47,48 @@ impl History {
         let entry = self.undo_stack.pop_back();
         match entry {
             Some(entry) => {
+                //need to keep track of the last entry, it didn't work when i didn't keep track of it
+                let mut last_entry = entry.clone();
 
-                //redo entries until we get to a backspace
+                //undo entries until we get to a backspace
                 self.redo_stack.push_back(entry.clone());
                 while entry.command == Command::AddChar {
                     if let Some(entry) = self.undo_stack.pop_back() {
+                        last_entry = entry.clone();
                         self.redo_stack.push_back(entry.clone());
                     } else {
-                        break;
+                        self.redo_stack.push_back(entry.clone());
+                        return Some(last_entry);
                     }
                 }
-                Some(entry)
+                Some(last_entry)
             },
             None => None,
         }
     }
     
     pub fn redo(&mut self) -> Option<HistoryEntry> {
-        if let Some(entry) = self.redo_stack.pop_back() {
-            self.undo_stack.push_back(entry.clone());
-            Some(entry)
-        } else {
-            None
+        let entry = self.redo_stack.pop_back();
+        match entry {
+            Some(entry) => {
+                let mut last_entry = entry.clone();
+
+                //redo entries until we get to a backspace
+                self.undo_stack.push_back(entry.clone());
+                while entry.command == Command::AddChar {
+                    if let Some(entry) = self.redo_stack.pop_back() {
+                        last_entry = entry.clone();
+                        println!("redoing entry");
+                        self.undo_stack.push_back(entry.clone());
+                    } else {
+                        return Some(last_entry);
+                    }
+                }
+                Some(last_entry)
+            }
+            None => None,
         }
+        
     }
 }
 

@@ -45,6 +45,32 @@ impl Editor {
         self.lines.insert(0, string);
     }
 
+    pub fn undo(&mut self) {
+        if let Some(history_entry) = self.history.undo() {
+            self.cursors = history_entry.cursors;
+            self.lines = history_entry.lines;
+        }
+        else {
+            self.notif_text = String::from("No edits to undo");
+        }
+    }
+
+    pub fn redo(&mut self) {
+        if let Some(history_entry) = self.history.redo() {
+            self.cursors = history_entry.cursors;
+            self.lines = history_entry.lines;
+        }
+        else {
+            self.notif_text = String::from("No edits to redo");
+        }
+    }
+
+    pub fn push_history(&mut self, comm: Command) {
+        self.history.push_history(
+            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), comm)
+        );
+    }
+
     /**
      * Get a mutable reference to the line we want to work on
      */
@@ -58,16 +84,14 @@ impl Editor {
      */
     pub fn backspace(&mut self) {
         let mut edited_flag = true;
-        self.history.push_history(
-            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Backspace)
-        );
+        self.push_history(Command::Backspace);
 
         for cursor in &mut self.cursors {
             let col = cursor.col as usize;
     
             if col > 0 {
-                dbg!(&self.lines[cursor.line as usize][col - 4..col]);
                 if col > 4 && &self.lines[cursor.line as usize][col - 4..col] == "    " {
+                    dbg!("deleting tab");
                     let line = &mut self.lines[cursor.line as usize];
                     line.remove(col - 4);
                     line.remove(col - 3);
@@ -103,9 +127,7 @@ impl Editor {
 
     pub fn backspace_word(&mut self) {
         let mut edited_flag = true;
-        self.history.push_history(
-            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Backspace)
-        );
+        self.push_history(Command::Backspace);
 
         //iterate over all cursors
         for cursor in &mut self.cursors {
@@ -134,8 +156,7 @@ impl Editor {
     }
 
     pub fn backspace_line(&mut self) {
-        let history = HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Backspace);
-        self.history.push_history(history);
+        self.push_history(Command::Backspace);
 
         for cursor in &mut self.cursors {
             if cursor.col > 0 {
@@ -147,9 +168,11 @@ impl Editor {
     }
 
     pub fn insert(&mut self, c: char) {
-        self.history.push_history(
-            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::AddChar)
-        );
+        let comm = match c {
+            ' ' => Command::Space,
+            _ => Command::AddChar
+        };
+        self.push_history(comm);
 
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;
@@ -169,9 +192,7 @@ impl Editor {
     }
 
     pub fn tab(&mut self) {
-        self.history.push_history(
-            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::Tab)
-        );
+        self.push_history(Command::Tab);
         
         for cursor in &mut self.cursors {
             let col = cursor.col as usize;
@@ -189,8 +210,6 @@ impl Editor {
                 //     prev_line = self.lines[cursor.line as usize - 1 - i].clone();
                 //     i += 1;
                 // }
-
-                // dbg!(&prev_line);
                 
                 let chars: Vec<char> = prev_line.chars().collect();
                 let mut i = 0;
@@ -217,9 +236,7 @@ impl Editor {
     }
 
     pub fn new_line(&mut self) {
-        self.history.push_history(
-            HistoryEntry::from(self.cursors.clone(), self.lines.clone(), Command::AddNewLine)
-        );
+        self.push_history(Command::AddNewLine);
         
         for cursor in &mut self.cursors {
             let cursor_x = cursor.col as usize;

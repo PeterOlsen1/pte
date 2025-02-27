@@ -6,7 +6,6 @@ It is by no means a *polished* text editor, and it is basically just the result 
 TODO:
 * Undos
   * Finish undos
-  * Need to assign the result of an undo to the editor. make method in editor object?
 * Figure out suitable keybinds (or at least some that suffice) (especially for mac)
 * Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?) (didn't work. ctrl + shift modifiers weird?)
   * When selected, hit right to put cursor at end, same with left

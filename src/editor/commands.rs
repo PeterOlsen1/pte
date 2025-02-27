@@ -1,4 +1,4 @@
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Command {
     NULL,
     GotoLine,
@@ -7,12 +7,11 @@ pub enum Command {
     Tab,
     FindSelection,
     OpenFile,
-    AddCharater,
     Backspace,
+    Space,
     SavePrompt,
     AddChar,
     AddNewLine,
-    AddString(String),
 }
 
 impl Command {
