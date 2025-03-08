@@ -15,10 +15,11 @@ use ratatui::{
     Terminal,
 };
 use std::{
-    env, io::{self, stdout}
+    env, io::{self, stdout},
+    panic
 };
 
-use utils::files::open_file;
+use utils::{files::open_file, utils::dbg};
 
 use editor::{
     editor::Editor,
@@ -129,7 +130,20 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     // Insert cursor symbol (`█`) at the correct column
                     let mut line_with_cursor = line.to_string();
                     if col < line_with_cursor.len() {
-                        line_with_cursor.insert(col, '█'); // cursor position
+                        let result = panic::catch_unwind(|| {
+                            let mut line_clone = line_with_cursor.clone();
+                            line_clone.insert(col, '█');
+                            line_clone
+                        });
+
+                        match result {
+                            Ok(line) => {
+                                line_with_cursor = line;
+                            }
+                            Err(_) => {
+                                line_with_cursor.push('█');
+                            }
+                        }
                     } else {
                         line_with_cursor.push('█'); // cursor at the end of the line
                     }

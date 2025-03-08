@@ -2,6 +2,7 @@ use super::{
     cursor::Cursor,
     commands::Command,
 };
+use crate::utils::utils::dbg;
 use std::collections::VecDeque;
 
 pub struct History {
@@ -10,7 +11,7 @@ pub struct History {
     max_size: usize,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct HistoryEntry {
     pub cursors: Vec<Cursor>,
     pub lines: Vec<String>,
@@ -35,14 +36,35 @@ impl History {
         self.undo_stack.len()
     }
 
+    pub fn redo_len(&self) -> usize {
+        self.redo_stack.len()
+    }
+
+    /// Ensure undo stack is within normal size when pushing entries to it
     pub fn push_history(&mut self, entry: HistoryEntry) {
+        if self.len() > self.max_size {
+            self.undo_stack.pop_front();
+        }
         self.undo_stack.push_back(entry);
+    }
+
+    /// Ensure redo stack is within normal size when pushing to it
+    pub fn push_redo(&mut self, entry: HistoryEntry) {
+        if self.redo_len() > self.max_size {
+            self.redo_stack.pop_front();
+        }
+        self.redo_stack.push_back(entry);
     }
 
     pub fn pop_back(&mut self) -> Option<HistoryEntry> {
         self.undo_stack.pop_back()
     }
 
+    /// Logical driver for the undo method
+    /// 
+    /// If we have an undo that is a character, keep going
+    /// until we no longer placed characters. This way
+    /// we can undo whole words at a time.
     pub fn undo(&mut self) -> Option<HistoryEntry> {
         let entry = self.undo_stack.pop_back();
         match entry {
@@ -51,13 +73,12 @@ impl History {
                 let mut last_entry = entry.clone();
 
                 //undo entries until we get to a backspace
-                self.redo_stack.push_back(entry.clone());
-                while entry.command == Command::AddChar {
+                self.push_redo(entry.clone());
+                while last_entry.command == Command::AddChar {
                     if let Some(entry) = self.undo_stack.pop_back() {
                         last_entry = entry.clone();
-                        self.redo_stack.push_back(entry.clone());
+                        self.push_redo(entry.clone());
                     } else {
-                        self.redo_stack.push_back(entry.clone());
                         return Some(last_entry);
                     }
                 }
@@ -67,6 +88,11 @@ impl History {
         }
     }
     
+    /// Logical drivers for the redo function 
+    /// 
+    /// Same logic as undo: if we redo a character placement, keep going
+    /// until we no longer are redoing characters. This way we can
+    /// redo entire words at a time
     pub fn redo(&mut self) -> Option<HistoryEntry> {
         let entry = self.redo_stack.pop_back();
         match entry {
@@ -74,12 +100,11 @@ impl History {
                 let mut last_entry = entry.clone();
 
                 //redo entries until we get to a backspace
-                self.undo_stack.push_back(entry.clone());
-                while entry.command == Command::AddChar {
+                self.push_history(entry.clone());
+                while last_entry.command == Command::AddChar {
                     if let Some(entry) = self.redo_stack.pop_back() {
                         last_entry = entry.clone();
-                        println!("redoing entry");
-                        self.undo_stack.push_back(entry.clone());
+                        self.push_history(entry.clone());
                     } else {
                         return Some(last_entry);
                     }

@@ -12,6 +12,7 @@ pub enum Command {
     SavePrompt,
     AddChar,
     AddNewLine,
+    Undo,
 }
 
 impl Command {

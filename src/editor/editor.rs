@@ -46,6 +46,9 @@ impl Editor {
     }
 
     pub fn undo(&mut self) {
+        //add the current state on to the stack
+        self.push_history(Command::AddChar);
+
         if let Some(history_entry) = self.history.undo() {
             self.cursors = history_entry.cursors;
             self.lines = history_entry.lines;

@@ -4,9 +4,11 @@ The PTE is a simple text editing program I made in rust, just as a hobby project
 It is by no means a *polished* text editor, and it is basically just the result of me toying around.
 
 TODO:
-* Undos
-  * Finish undos
+* Error prevention
+  * Can we stop the whole editor from crashing on a panic
+  * Panics are especially prevalent with greek letters
 * Figure out suitable keybinds (or at least some that suffice) (especially for mac)
+  * Keybind loader?
 * Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?) (didn't work. ctrl + shift modifiers weird?)
   * When selected, hit right to put cursor at end, same with left
 * Copy
