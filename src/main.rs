@@ -19,13 +19,13 @@ use std::{
     panic
 };
 
-use utils::{files::open_file, utils::dbg};
+use utils::{files::{open_file, save_file}, utils::dbg};
 
 use editor::{
     editor::Editor,
     input::{
         handle_ctrl, handle_command, handle_ctrl_shift
-    },
+    }
 };
 
 fn main() -> io::Result<()> {
@@ -45,6 +45,11 @@ fn main() -> io::Result<()> {
         editor.filename = args[1].clone();
         open_file(&mut editor);
     }
+
+    panic::set_hook(Box::new(|_| {
+        dbg("Main thread panicked");
+        println!("An error occurred.");
+    }));
 
     let res = run_app(&mut terminal, &mut editor);
     // let res = Ok(());

@@ -1,4 +1,5 @@
-use crate::{get_lines_len, get_line_len_int, get_line_len};
+use crate::{get_line_len_int, get_line_len};
+use std::io::Write;
 
 use super::{
     cursor::Cursor,
@@ -43,6 +44,22 @@ impl Editor {
 
     pub fn dbg(&mut self, string: String) {
         self.lines.insert(0, string);
+    }
+
+    pub fn save(self) {
+        let file = std::fs::File::create(&self.filename);
+
+        let content = self.lines.join("\n");
+        match file {
+            Ok(mut file) => {
+                let write = file.write_all(content.as_bytes());
+                match write {
+                    Ok(_) => {}
+                    Err(_) => {}
+                }
+            }
+            Err(_) => {}
+        }
     }
 
     pub fn undo(&mut self) {

@@ -5,8 +5,7 @@ It is by no means a *polished* text editor, and it is basically just the result 
 
 TODO:
 * Error prevention
-  * Can we stop the whole editor from crashing on a panic
-  * Panics are especially prevalent with greek letters
+  * Clean up editor on panic (save file)
 * Figure out suitable keybinds (or at least some that suffice) (especially for mac)
   * Keybind loader?
 * Selection (SHIFT + DIRECTION would be nice, CTRL + SHIFT for line select in that direction?) (didn't work. ctrl + shift modifiers weird?)
