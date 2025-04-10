@@ -13,7 +13,7 @@ impl Finder {
         }
     }
 
-    pub fn find(&mut self, lines: Vec<String>, current_line: u16) {
+    pub fn find(&mut self, lines: Vec<String>, _: u16) {
         self.search_results.clear();
 
         for (i, line) in lines.iter().enumerate() {

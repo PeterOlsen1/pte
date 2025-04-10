@@ -19,7 +19,7 @@ use crate::{get_line_len, get_line_len_int, get_lines_len};
  * @param modifier: KeyModifiers - The modifier of the key event (should be CTRL, maybe more?)
  * We should probably pass in current state of the editor too, if we want to move the cursor
  */
-pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -> () {
+pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, _: KeyModifiers) -> () {
 
     match code {
         KeyCode::Char('z') => {
@@ -98,7 +98,7 @@ pub fn handle_ctrl(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -
  * @param code: KeyCode - The key code of the key event
  * @param modifier: KeyModifiers - The modifier of the key event (should be CTRL, maybe more?)
  */
-pub fn handle_ctrl_shift(editor: &mut Editor, code: KeyCode, modifier: KeyModifiers) -> () {
+pub fn handle_ctrl_shift(editor: &mut Editor, code: KeyCode, _: KeyModifiers) -> () {
     match code {
         KeyCode::Right => {
             for cursor in &mut editor.cursors {

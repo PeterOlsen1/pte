@@ -1,5 +1,4 @@
 use crate::{get_line_len_int, get_line_len};
-use std::io::Write;
 
 use super::{
     cursor::Cursor,
@@ -46,21 +45,21 @@ impl Editor {
         self.lines.insert(0, string);
     }
 
-    pub fn save(self) {
-        let file = std::fs::File::create(&self.filename);
+    // pub fn save(self) {
+    //     let file = std::fs::File::create(&self.filename);
 
-        let content = self.lines.join("\n");
-        match file {
-            Ok(mut file) => {
-                let write = file.write_all(content.as_bytes());
-                match write {
-                    Ok(_) => {}
-                    Err(_) => {}
-                }
-            }
-            Err(_) => {}
-        }
-    }
+    //     let content = self.lines.join("\n");
+    //     match file {
+    //         Ok(mut file) => {
+    //             let write = file.write_all(content.as_bytes());
+    //             match write {
+    //                 Ok(_) => {}
+    //                 Err(_) => {}
+    //             }
+    //         }
+    //         Err(_) => {}
+    //     }
+    // }
 
     pub fn undo(&mut self) {
         //add the current state on to the stack
@@ -91,12 +90,12 @@ impl Editor {
         );
     }
 
-    /**
-     * Get a mutable reference to the line we want to work on
-     */
-    pub fn get_line(&mut self, cursor: &mut Cursor) -> &mut String {
-        &mut self.lines[cursor.line as usize]
-    }
+    // /**
+    //  * Get a mutable reference to the line we want to work on
+    //  */
+    // pub fn get_line(&mut self, cursor: &mut Cursor) -> &mut String {
+    //     &mut self.lines[cursor.line as usize]
+    // }
 
     /**
      * Delete previous character. If we are at the beginning of the line, 

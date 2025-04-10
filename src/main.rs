@@ -19,7 +19,7 @@ use std::{
     panic
 };
 
-use utils::{files::{open_file, save_file}, utils::dbg};
+use utils::{files::open_file, utils::dbg};
 
 use editor::{
     editor::Editor,
@@ -46,13 +46,13 @@ fn main() -> io::Result<()> {
         open_file(&mut editor);
     }
 
-    panic::set_hook(Box::new(|_| {
-        dbg("Main thread panicked");
+    panic::set_hook(Box::new(|info| {
+        dbg(info.payload().downcast_ref::<&str>().unwrap_or(&"An error occurred."));
         println!("An error occurred.");
+        println!("Error: {:?}", info.payload());
     }));
 
     let res = run_app(&mut terminal, &mut editor);
-    // let res = Ok(());
 
     // Restore terminal
     disable_raw_mode()?;

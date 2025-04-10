@@ -2,7 +2,6 @@ use super::{
     cursor::Cursor,
     commands::Command,
 };
-use crate::utils::utils::dbg;
 use std::collections::VecDeque;
 
 pub struct History {
@@ -118,13 +117,13 @@ impl History {
 }
 
 impl HistoryEntry {
-    pub fn new() -> HistoryEntry {
-        Self {
-            cursors: Vec::new(),
-            lines: Vec::new(),
-            command: Command::NULL,
-        }
-    }
+    // pub fn new() -> HistoryEntry {
+    //     Self {
+    //         cursors: Vec::new(),
+    //         lines: Vec::new(),
+    //         command: Command::NULL,
+    //     }
+    // }
 
     pub fn from(cursors: Vec<Cursor>, lines: Vec<String>, command: Command) -> HistoryEntry {
         Self {
