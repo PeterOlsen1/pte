@@ -120,8 +120,12 @@ impl Editor {
                 } 
                 else {
                     let line = &mut self.lines[cursor.line as usize];
-                    line.remove(col as usize - 1);
-                    cursor.col -= 1;
+                    // Convert character index to byte index
+                    let char_idx = col - 1;
+                    if let Some(byte_idx) = line.char_indices().nth(char_idx).map(|(i, _)| i) {
+                        line.remove(byte_idx);
+                        cursor.col -= 1;
+                    }
                 }
             } 
             else if cursor.line == 0 {
@@ -161,11 +165,16 @@ impl Editor {
                 continue;
             }
             
-            //remove all characters until a space
-            while chars[cursor.col as usize - 1] != ' ' && cursor.col > 0 {
-                line.remove(cursor.col as usize - 1);
-                cursor.col -= 1;
-                edited_flag = true;
+            // 
+            while cursor.col > 0 && chars[cursor.col as usize - 1] != ' ' {
+                let col = cursor.col as usize - 1;
+                if let Some(byte_idx) = line.char_indices().nth(col).map(|(i, _)| i) {
+                    line.remove(byte_idx);
+                    cursor.col -= 1;
+                    edited_flag = true;
+                } else {
+                    break;
+                }
             }
         }
 
@@ -194,9 +203,10 @@ impl Editor {
         self.push_history(comm);
 
         for cursor in &mut self.cursors {
-            let cursor_x = cursor.col as usize;
+            let col = cursor.col as usize;
             let line = &mut self.lines[cursor.line as usize];
-            line.insert(cursor_x, c);
+            let byte_idx = line.char_indices().nth(col).map(|(i, _)| i).unwrap_or(line.len());
+            line.insert(byte_idx, c);
             cursor.col += 1;
         }
     }

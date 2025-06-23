@@ -31,9 +31,9 @@ use editor::{
 fn main() -> io::Result<()> {
     // Set up terminal
     enable_raw_mode()?;
-    let mut stdout = stdout();
-    execute!(stdout, EnterAlternateScreen)?;
-    let backend = CrosstermBackend::new(stdout);
+    let mut stdout_ref = stdout();
+    execute!(stdout_ref, EnterAlternateScreen)?;
+    let backend = CrosstermBackend::new(stdout_ref);
     let mut terminal = Terminal::new(backend)?;
 
     //define editor state
@@ -46,10 +46,20 @@ fn main() -> io::Result<()> {
         open_file(&mut editor);
     }
 
+    // set panic hook to handle errors gracefully (ish)
     panic::set_hook(Box::new(|info| {
-        dbg(info.payload().downcast_ref::<&str>().unwrap_or(&"An error occurred."));
+        let err_info = info.payload().downcast_ref::<&str>();
+        dbg(err_info.unwrap_or(&"An error occurred."));
         println!("An error occurred.");
         println!("Error: {:?}", info.payload());
+        // let _ = disable_raw_mode();
+
+        // let stdout_ref = stdout();
+        // let backend = CrosstermBackend::new(stdout_ref);
+        // let mut terminal = Terminal::new(backend).unwrap();
+        // execute!(terminal.backend_mut(), LeaveAlternateScreen).unwrap();
+        // terminal.clear().unwrap();
+        // terminal.show_cursor().unwrap();
     }));
 
     let res = run_app(&mut terminal, &mut editor);
@@ -58,7 +68,6 @@ fn main() -> io::Result<()> {
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
     terminal.show_cursor()?;
-
 
     res
 }
@@ -137,7 +146,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                     if col < line_with_cursor.len() {
                         let result = panic::catch_unwind(|| {
                             let mut line_clone = line_with_cursor.clone();
-                            line_clone.insert(col, '█');
+                            let byte_idx = line_with_cursor.char_indices().nth(col).map(|(i, _)| i).unwrap_or(line_with_cursor.len());
+                            line_clone.insert(byte_idx, '█');
                             line_clone
                         });
 
@@ -246,7 +256,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, editor: &mut Editor) -> io::R
                 }
                 _ => {
                     editor.changes_saved = false;
-                    editor.insert(code.to_string().chars().next().unwrap());
+                    let char = code.to_string().chars().next().unwrap_or('\0');
+                    editor.insert(code.to_string().chars().next().unwrap_or('\0'));
                 }
             }
         }
